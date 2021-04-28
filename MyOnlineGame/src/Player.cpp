@@ -3,8 +3,8 @@
 Player::Player(std::string name):
 	Entity(name)
 {
-	speed.x = 10;
-	speed.y = 10;
+	speed.x = 20;
+	speed.y = 20;
 }
 
 void Player::update()

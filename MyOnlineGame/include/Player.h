@@ -9,7 +9,7 @@ public:
 	Player(std::string name);
 
 public:
-	void update() override;
+	void update();
 	void draw(sf::RenderWindow& window) override;
 
 private:

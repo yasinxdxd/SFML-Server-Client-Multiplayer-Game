@@ -1,18 +1,16 @@
 #include <Game.h>
 #include <Windows.h>
 #include <chrono>
-#include <thread>
 
-Game::Game(std::string player_name) :
+Game::Game(const unsigned short& PORT, sf::IpAddress Client_IP, std::string player_name) :
 	m_window(sf::VideoMode(800, 600), "MyGame", sf::Style::Close | sf::Style::Titlebar),
-	player(std::make_shared<Player>(player_name)),
-	GameClient(50000, sf::IpAddress("192.168.1.105"))
+	GameClient(PORT, sf::IpAddress(SERVER_IP), Client_IP, player_name)
 {
 	//window properities
-	m_window.setFramerateLimit(60);
+	m_window.setFramerateLimit(30);
 
-	player->m_texture.loadFromFile("resource/assets/Soldier 1/soldier1_hold.png");
-	player->m_sprite.setTexture(player->m_texture);
+	GameClient.player->m_texture.loadFromFile("resource/assets/Soldier 1/soldier1_hold.png");
+	GameClient.player->m_sprite.setTexture(GameClient.player->m_texture);
 
 	
 }
@@ -28,18 +26,11 @@ void Game::update()
 	{
 		eventUpdate();
 		
-		//player update:
-		player->update();
+		GameClient.Run();
 
-		
-		GameClient.Run(this);
-		
-
-		
-		//game draw:
 		draw();
 	}
-	GameClient.Disconnect(this);
+	GameClient.Disconnect();
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 
 }
@@ -47,31 +38,11 @@ void Game::update()
 void Game::draw()
 {
 	m_window.clear();
-	player->draw(m_window);
+	//printf("%d\n", GameClient.remote_players.size());
+	for (auto& [ip, r_player] : GameClient.remote_players)
+		r_player->draw(m_window);
+	GameClient.player->draw(m_window);
 	m_window.display();
-}
-
-void Game::ManageSendingData() noexcept
-{
-	GameClient.packetSend
-		<< GameClient.GetStatus()
-		<< player->name
-		<< player->pos.x
-		<< player->pos.y;
-
-}
-
-void Game::ManageRecievingData() noexcept
-{
-	bool b;
-	std::string n;
-	float x, y;
-	GameClient.packetRecieve
-		>> b
-		>> n
-		>> x >> y;
-	printf("x: %1.f\n", x);
-	printf("y: %1.f\n", y);
 }
 
 void Game::eventUpdate()
